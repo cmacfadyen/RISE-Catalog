@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RISE 2026 Course Catalog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .course-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .active-filter { background-color: #4f46e5 !important; color: white !important; border-color: #4f46e5 !important; }
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <header class="flex flex-col md:flex-row items-center justify-center gap-4 mb-8">
+            <img src="https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20logo.png" alt="RISE Logo" class="h-12 w-auto">
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight italic text-slate-900 border-l-0 md:border-l-2 md:pl-4 border-slate-300">
+                RISE 2026 <span class="font-normal text-slate-500 not-italic ml-1 text-2xl md:text-3xl">Course Catalog</span>
+            </h1>
+        </header>
+
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 items-end">
+                
+                <div class="lg:col-span-2">
+                    <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Search Courses</label>
+                    <input type="text" id="search-input" placeholder="Search title, teacher, or keyword..." 
+                           class="w-full border border-slate-300 px-4 py-2.5 rounded-xl font-medium text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Filter by Strand</label>
+                    <div id="strand-filters" class="flex flex-wrap gap-2">
+                        <button data-type="strand" data-val="All" class="filter-btn active-filter border border-slate-200 px-3 py-2 rounded-lg font-bold text-[10px] uppercase">All</button>
+                        <button data-type="strand" data-val="Serve" class="filter-btn border border-slate-200 px-3 py-2 rounded-lg font-bold text-[10px] uppercase">Serve</button>
+                        <button data-type="strand" data-val="Think" class="filter-btn border border-slate-200 px-3 py-2 rounded-lg font-bold text-[10px] uppercase">Think</button>
+                        <button data-type="strand" data-val="Create" class="filter-btn border border-slate-200 px-3 py-2 rounded-lg font-bold text-[10px] uppercase">Create</button>
+                        <button data-type="strand" data-val="Play" class="filter-btn border border-slate-200 px-3 py-2 rounded-lg font-bold text-[10px] uppercase">Play</button>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Sort By</label>
+                    <select id="sort-select" class="w-full border border-slate-300 px-3 py-2.5 rounded-xl font-bold text-xs bg-slate-50 outline-none">
+                        <option value="random">Random</option>
+                        <option value="number">Course Number</option>
+                        <option value="name">Course Name</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-2">
+                    <button id="reset-btn" class="flex-grow bg-slate-100 hover:bg-slate-200 text-slate-600 font-black py-2.5 px-3 rounded-xl text-[10px] uppercase transition-colors border border-slate-200">
+                        Reset
+                    </button>
+                    <div id="time-filters" class="flex gap-1">
+                        <button data-type="duration" data-val="Half Day AM" class="filter-btn border border-slate-200 px-3 py-2 rounded-xl font-black text-[10px]">AM</button>
+                        <button data-type="duration" data-val="Half Day PM" class="filter-btn border border-slate-200 px-3 py-2 rounded-xl font-black text-[10px]">PM</button>
+                        <button data-type="duration" data-val="Full Day" class="filter-btn border border-slate-200 px-3 py-2 rounded-xl font-black text-[10px]">Full Day</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="course-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            </div>
+    </div>
+
+    <div id="modal-overlay" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-4xl overflow-hidden relative shadow-2xl flex flex-col md:flex-row max-h-[90vh]">
+            <button id="close-btn" class="absolute top-4 right-4 z-10 bg-white/80 p-2 rounded-full hover:bg-white transition-colors text-slate-900">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            
+            <div class="md:w-1/2 h-64 md:h-auto bg-slate-100">
+                <img id="m-photo" src="" alt="" class="w-full h-full object-cover">
+            </div>
+
+            <div class="md:w-1/2 p-8 overflow-y-auto">
+                <span id="m-strand" class="text-xs font-black uppercase tracking-widest text-indigo-600"></span>
+                <h2 id="m-title" class="text-3xl font-extrabold text-slate-900 mt-2 leading-tight"></h2>
+                <p id="m-teachers" class="text-slate-500 font-bold mt-2 italic"></p>
+                
+                <div class="mt-8 space-y-6">
+                    <div>
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Timing</h4>
+                        <p id="m-duration" class="text-slate-900 font-bold text-lg"></p>
+                    </div>
+                    <div>
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Description</h4>
+                        <p id="m-description" class="text-slate-700 leading-relaxed mt-1"></p>
+                    </div>
+                    <div id="m-prereq-box" class="hidden bg-amber-50 p-4 rounded-xl border border-amber-100">
+                        <h4 class="text-[10px] font-black text-amber-600 uppercase tracking-widest">Prerequisites</h4>
+                        <p id="m-prereq" class="text-amber-900 font-medium mt-1"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        //Data goes here
+   
+const courses = [
+  {
+    "courseNumber": 100,
+    "title": "American Red Cross Lifeguarding Course",
+    "tagline": "Be Prepared to Prevent, Protect and Respond to Aquatic Emergencies.",
+    "description": "Learn how to effectively prevent and respond to water emergencies with the American Red Cross lifeguard training and earn your certificate to be a lifeguard on Lake Champlain or your local pool this summer. The certification includes First Aid and CPR/AED training, is valid for two years upon completion, and is accepted nationwide. Coaching in stroke technique will be embedded in the course; students who have good swimming skills but may need some coaching to meet the certification prerequisites should consider enrolling in the course. Students can still earn RISE credit even if they do not meet the requirements for certification at the end of the course.  This is a highly popular RISE course that requires strong focus, discipline, and physical endurance.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/100.png",
+    "strand": "Think",
+    "duration": "Half Day PM",
+    "prereq": "Students must be 15 years old by the last day of the course and demonstrate proficiency in pre-course swimming skills (Swim 150 yards, tread water 2 minutes, swim 50 more yards; swim 20 yards, retrieve a submerged 10 lb brick and swim back without submerging in 1 min 40 seconds). If students are unable to complete this prerequisite, other options (shallow water certification, CPR certification only) can be considered on a case by case basis.\n**This course involves approximately 7.5 hours of online content that must be done prior to RISE starting. There will be a mandatory C3 session in April for students to register and get access to the online content.  \n\nStudent fee: $155, scholarships are available.**",
+    "teachers": "Henry Lang & Jess Hoskins",
+    "isPopular": true
+  },
+  {
+    "courseNumber": 101,
+    "title": "Adopt a Grandparent",
+    "tagline": "Volunteer In Local Senior Living Communities ",
+    "description": "In this session, we will travel to local senior living facilities and spend time volunteering with the residents. Students will play games, have conversations, go for walks and even garden with seniors. As a community, let’s make sure our seniors know how special they are to us!\n\nHere is what past participants have said after their time visiting local assisted living facilities.: \n“This experience made me feel very responsible because of the role I was taking. I had many deep conversations with many residents and at the beginning of this year, I don’t think I would have wanted to do that. The connections I made with the residents I will never forget..”\n“Through volunteering I feel that we are taking care of each other as well as the community. Traveling to the Arbors allowed me to make personal connections with the residents. The most rewarding part of going to the Arbors was the residents remembering you. As soon as you walked in the door their faces lit up. You could see the happiness in their eyes. The residents were allowed to talk about themselves and make connections to our lives now. Most of the residents only remember old memories (such as their childhood) and were able to relate to us.”\n“At the end of my visits at the Arbors I grabbed an application, hoping to someday go back to the Arbors and get as great of an experience as I did, or even better.” ",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/101.png",
+    "strand": "Serve",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Heather MacDonald & Julie St Martin",
+    "isPopular": true
+  },
+  {
+    "courseNumber": 102,
+    "title": "Intro to American Sign Language",
+    "tagline": "Discover the power of visual communication",
+    "description": "This introductory course invites students to explore American Sign Language (ASL) Students will learn basic conversational skills, including the alphabet, numbers, everyday vocabulary, common phrases, and more. Through interactive activities, games, and more, students will practice signing while also gaining an understanding of Deaf culture and history. No prior ASL knowledge is required—just curiosity and a willingness to learn a new way of expressing yourself.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/102.png",
+    "strand": "Think",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Anne Muessel & Jess LaPlante",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 103,
+    "title": "Design a Board Game!",
+    "tagline": "From concept to creation — craft your own adventure.",
+    "description": "Embark on the thrilling journey of designing, building, and playtesting your very own board game! Get ready to unleash your imagination, collaborate with fellow game enthusiasts, and have a blast bringing your game ideas to life. Whether you're a seasoned gamer or new to the world of board games, this group is the perfect place to let your creativity soar and have a great time with like-minded individuals.\n",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/103.png",
+    "strand": "Create",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "John Bushnell",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 104,
+    "title": "Yoga & Service",
+    "tagline": "Explore different yoga studios to experience the value of yoga for our individual well being, and consider how taking care of ourselves can lead us to have a greater capacity to help others.",
+    "description": "Wanting to take care of yourself at the end of the school year? Hoping to find opportunities to take care of others, too? \n\nWe will spend around half of our time practicing yoga in different studios in the area, getting the chance to try different types of yoga in new settings. The other part of our time will be spent paying it forward: engaging in community service through a variety of service activities (the actual service activities are to be determined). This course is appropriate for anyone: yoga beginner to advanced yogi.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/104.png",
+    "strand": "Play",
+    "duration": "Half Day AM",
+    "prereq": "Yoga involves mobility, but this course is flexible to whatever people need - that's kind of its point!",
+    "teachers": "Carly Brown",
+    "isPopular": true
+  },
+  {
+    "courseNumber": 105,
+    "title": "Dance 101",
+    "tagline": "Do you have a hard time sitting still, like creative challenges, or want to get stronger and more flexible? Have you ever learned a TikTok dance just for fun? Dance 101 is the class for you!",
+    "description": "In this session, we will experiment with self-expression through dance, taking creative risks as we go. Dance 101 blends several types of dance into your own unique style, exploring elements of ballet, jazz, lyrical, contemporary, hip hop, African dance, Latin dance, and Russian dance. Each class will include warm-ups, isolations, stretches, moving across the floor, style exploration, improvisation, and choreography combinations. We will then perform our own choreography on Presentation Day. Dancers of all comfort and ability levels are welcome!",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/105.png",
+    "strand": "Play",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Lena Kirillova",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 106,
+    "title": "Tennis Basics",
+    "tagline": "Get outside and learn to play tennis! ",
+    "description": "This course is designed for beginner to intermediate tennis players to learn the basics of this life long game. We travel to the courts at Davis Park in Shelburne everyday and practice the standard strokes (forehands, backhands, volleys and serves), do fun drills and play a variety of tennis games.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/106.png",
+    "strand": "Play",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Bret Gardner",
+    "isPopular": true
+  },
+  {
+    "courseNumber": 107,
+    "title": "Lego Theory: RISE of the Master Builders!",
+    "tagline": "Build and play with Lego and others for 2+ hours each day!",
+    "description": "Do you have what it takes to be a Lego Master Builder? In Lego Theory: RISE of the Master Builders you’ll have the chance to test yourself against challenging Lego tasks, build cooperatively with other Lego-maniacs and, of course, measure your skills amid other would-be-master builders. Each day we’ll start with warm-up challenges, move on to build tasks, and make time and space for “free builds”. All Lego will be provided! ",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/107.png",
+    "strand": "Create",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "TJ Mead",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 108,
+    "title": "Stained Glass for Beginners",
+    "tagline": "Learn how to create beautiful illuminated light!",
+    "description": "Explore and practice the process of making a creative form of historical art. Learn how to cut, shape, and solder glass to make your own illuminated object of art.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/108.png",
+    "strand": "Create",
+    "duration": "Half Day AM",
+    "prereq": "Students need to be able to work with sharp glass, use a hot soldering iron, and are able to work with a grinding machine to smooth glass shards.",
+    "teachers": "Tina Roberts & Charlotte Sylvester",
+    "isPopular": true
+  },
+  {
+    "courseNumber": 109,
+    "title": "Canoeing Basics",
+    "tagline": "Paddle straight and don't flip over! ",
+    "description": "In this session you will learn how to paddle, enter and exit, and transport a canoe safely.  You will be on the water every day practicing canoe skills balanced with leisure, exposure to local nature and fun!  Be prepared to get your feet wet and muddy (sometimes),  wear sunscreen and a hat, lift and carry  a canoe with your partners, take a dip in the water, and have a ton of fun.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/109.png",
+    "strand": "Play",
+    "duration": "Full Day",
+    "prereq": "Students must have mobility to enter a canoe with minimal help, and step in water to do that.",
+    "teachers": "Troy Paradee & Leanne Morton",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 110,
+    "title": "Math of Cards (Poker)",
+    "tagline": "You will learn how to be a better poker player, and have fun doing it!",
+    "description": "The class will consist of learning poker rules, probability and strategies.  We will have ample time for students to try these out in actual games.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/110.png",
+    "strand": "Play",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Kiran MacCormick",
+    "isPopular": true
+  },
+  {
+    "courseNumber": 111,
+    "title": "Focus on Fitness",
+    "tagline": "Come try new fitness experiences!",
+    "description": "Do you want to get in better shape and increase your energy but can’t find the time? This course will expose you to many different types of physical activities that will improve your overall strength and fitness. \n\nAlong the way you will set goals, track your progress, learn about training regimens, and maybe even find your passion for fitness! Activities will include a mix of cardio, core, agility, and strength exercises. We will be taking several field trips in order to have a variety of fitness experiences. This course will be tailored to the individual - all fitness levels welcome! \n",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/111.png",
+    "strand": "Play",
+    "duration": "Half Day AM",
+    "prereq": "Student cost: $80, scholarships available.",
+    "teachers": "Kari Roberts-Sanchez & Seth Jensen",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 112,
+    "title": "CVSD 4th Grade Track Meet",
+    "tagline": "Want to work with younger students in a fun active setting, then the track meet is for you! ",
+    "description": "Students will go to sending schools PE classes to teach 4th graders track and field events they will particpate in at the meet. Students organzie groups, coach, facitliate events, and cheer on CVSD 4th graders in an all day track and field event put on by you! ",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/112.png",
+    "strand": "Play",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Kelly Davis & Bailey Olsen",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 113,
+    "title": "The Art of Baking: Sweet Treats, Breads, & Pizzas!",
+    "tagline": "If you could only have one food what would it be? If your answer includes bread, pizza, or sweet treats, this course is for you!",
+    "description": "\nLearn how to make sweet treats (including cookies) and bread (including pizza) from scratch! Learn all you KNEAD to know about leavening, measuring, mixing - and more - to make the dough RISE in this hands-on seminar.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/113.png",
+    "strand": "Create",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Alex Caforia & Trish Healy",
+    "isPopular": true
+  },
+  {
+    "courseNumber": 114,
+    "title": "Farm to School",
+    "tagline": "Join us for cooking and gardening workshops, taste tests, and farm field trips ",
+    "description": "This session will include setting up the vegetable beds at CVU, trying a variety of recipes that can be made from foods found in Vermont gardens and then visiting locals farms and gardens. \n**Students will have the option of pairing this session with an afternoon ILE that may include supporting Farm to School gardens at the sending schools, raised beds at senior centers, working with local companies to understand Horticulture business, or starting your own production garden. ",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/114.png",
+    "strand": "Think",
+    "duration": "Half Day AM",
+    "prereq": "Students will be outside most of the time.",
+    "teachers": "Heather  Morley & Kari Hoose",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 115,
+    "title": "World Domination - Risk! & other analog games of strategy",
+    "tagline": "Learn how to conquer the world (or not)!",
+    "description": "What is the relationship among land, resources and power? How have empires, nations and kingdoms built and lost power? What can I learn about strategies to be successful on the game board and how similar strategies have played out in the real world?",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/115.png",
+    "strand": "Think",
+    "duration": "Half Day PM",
+    "prereq": "Students need to have decent fine motor skills in order to manipulate small game pieces and roll dice.",
+    "teachers": "Jeff Hindes",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 116,
+    "title": "Fly Tying",
+    "tagline": "Fly tying is an ancient art form that involves using a variety of materials to create various patterns to create flies that imitate the insects that fish eat.",
+    "description": "   During this experience participants will be designing and tying flies for Vermont fishing using materials such as hooks, thread, feathers (like hackle, marabou, and pheasant tail), hair (deer hair, elk hair), synthetic fibers (like dubbing and Krystal Flash), wire, and beads.  \n   Do you want to test out your flies? You can add a Fly Fishing Independent Learning Experience (ILE) to this RISE for a full day experience.  If you'd like to do this, you will sign-up for this course and fill-out the ILE paperwork separately.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/116.png",
+    "strand": "Create",
+    "duration": "Half Day PM",
+    "prereq": "Student cost: $30, scholarships available. If students want to participate in the Fly Fishing Independent Learning Experience, there is an additional cost of to obtain a Vermont Fishing License ($28). ",
+    "teachers": "Corinna Hussey",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 117,
+    "title": "Realism Oil Painting",
+    "tagline": "Transform any photo into a realistic oil painting",
+    "description": "\n Students will learn the techniques and processes used to create a realistic oil painting from start to finish. After studying composition, each student will select a photograph to transform into a detailed painting. Students will transfer their image onto canvas, paint an undercoat to establish tone and value, and then build layers of color and detail to achieve depth and realism. By the end of the course, each student will complete a polished, lifelike oil painting while developing a deeper understanding of oil painting methods.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/117.png",
+    "strand": "Create",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Alexis Begnoche",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 118,
+    "title": "Play the Ukulele",
+    "tagline": "Become a CVUke: From zero to song in two weeks!",
+    "description": "It is the rise of the Ukulele! A long and rich history follows this small but mighty instrument, from the seafarers of Europe to the indigenous population of Hawaii, the ukulele drew converts wherever it went. In fact, ukulele is Hawaiian for “jumping flea,” in honor of the player's quick fingers on the strings.  During this experience we will spend time making music! \n",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/118.png",
+    "strand": "Create",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Jess Lemieux",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 119,
+    "title": "Jump start Your Career Pathway",
+    "tagline": "Tired of hearing that a four-year degree is your only option? Ready to start earning real money sooner?  Join the RISE Career Jumpstart Workshop where we blow the lid off outdated career advice. This isn't just a boring classroom session—it's your fast track to a high-paying, in-demand career right here in Vermont.",
+    "description": "\nGo Behind the Scenes: We're leaving campus daily to get out of the classroom and inside the state's fastest-growing workplaces, especially the trades and other high-tech, in-demand fields. Think advanced manufacturing, specialized tech, and skilled construction—careers that are desperate for young talent. By the end of the week, you'll have a clear, actionable plan for your life after high school, whether it's an apprenticeship, a specialized certificate, or a direct entry job (or higher education, if that's your path!) \n\n",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/119.png",
+    "strand": "Think",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Laurie Berryman",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 120,
+    "title": "Skateboarding",
+    "tagline": "School of Shred",
+    "description": "Skateboarding is an athletic endeavor, culture and lifestyle. During the RISE Skateboarding session we will skate daily at a variety of local skateparks as well as explore the history, culture, art and business of skate culture. This course will include off campus travel.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/120.png",
+    "strand": "Play",
+    "duration": "Half Day AM",
+    "prereq": "Students will need to have a skateboard and helmet or will need to request a loaner skateboard and helmet.",
+    "teachers": "Tim Duvernoy",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 121,
+    "title": "Flight, Foam, and Film",
+    "tagline": "Design, Build, Fly, Crash, Repeat. ",
+    "description": "This session will explore the design principles behind making things that fly! Our days will be spent building foam models out of “maker-foam” from existing plans, learning the tools and techniques of the modeling practice, and getting them in the air! All while having a notable movie about flight playing in the background. This is an opportunity to use creative engineering practices and build tangible products through an iterative process. \n",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/121.png",
+    "strand": "Create",
+    "duration": "Half Day AM",
+    "prereq": "Student cost: $25-50\nScholarships available.",
+    "teachers": "George Schock",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 122,
+    "title": "Tra-digital Photography",
+    "tagline": "Leran about both film and digital photography in this RISE experience. All experience levels are welcome.",
+    "description": "This RISE course provides students with an overview of the fundamentals of both film and digital photography through hands-on projects. Students will understand how a camera works and how to operate a camera in manual mode. At the end of the course, students will have a portfolio of work demonstrating their learning and exploration.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/122.png",
+    "strand": "Create",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Emily McLean",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 123,
+    "title": "Dorm Room Cooking 101: Real Food with Minimal Gear",
+    "tagline": "Simple tools. Real food. College-ready skills.",
+    "description": "This hands-on course is designed for students preparing for college who want to learn how to cook real, nourishing food without a full kitchen. Using dorm-friendly appliances like air fryers, toaster ovens, hot plates, and electric kettles, students will build confidence cooking simple meals, learn basic food safety, and develop practical skills they can use in dorm rooms or small apartments. No prior cooking experience required.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/123.png",
+    "strand": "Create",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Juanita Galloway",
+    "isPopular": true
+  },
+  {
+    "courseNumber": 124,
+    "title": "Disc Golf",
+    "tagline": "Find your flow on the fairway.",
+    "description": "Do you like throwing frisbees? Are you a fan of golf? Play a sport that combines the two! Whether you have never thrown a disc before or you play every weekend, this is the RISE for you! We will learn the rules of the game, how to choose the right disc, how to evaluate your approach to the basket, and how to keep score. And we will primarily be using CVU’s own disc golf course. No experience required!",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/124.png",
+    "strand": "Play",
+    "duration": "Half Day PM",
+    "prereq": "Participants should be able to walk 3-5 miles over varied terrain.",
+    "teachers": "Michelle Pinaud",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 125,
+    "title": "Back to School",
+    "tagline": "\"The best way to find yourself is to lose yourself in the service of others,\" by Mahatma Gandhi. ",
+    "description": "Perhaps you want to “give back” to a teacher who helped you in the past...perhaps you want to explore the idea of becoming a teacher...perhaps you want to make a meaningful impact by helping younger students. Here is your chance: spend your RISE time by being a Teaching Assistant (T.A.) in one of our sending schools: Allen Brook School, Charlotte Central School, Hinesburg Community School,  Shelburne Community School, or Williston Central School.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/125.png",
+    "strand": "Serve",
+    "duration": "Full Day",
+    "prereq": "Open to 10th-12th graders only.  Maturity and strong social skills are needed for this RISE.",
+    "teachers": "Kathleen Gibbs & Lacey Richards",
+    "isPopular": true
+  },
+  {
+    "courseNumber": 126,
+    "title": "Wilderness First Aid and Outdoor Leadership",
+    "tagline": "Finding and fixing people in the woods!",
+    "description": "Wilderness First Aid and Outdoor Leadership blends adventure and service. Through two and a half days of certification training and hands-on outdoor learning, you’ll build skills in trip leading, search and rescue, and group and risk management. Our time together includes classroom time, rescue scenarios, outdoor exploration, and trailwork service projects with the Green Mountain Club and Vermont Youth Conservation Corps, giving back to the landscapes we explore.  **This course will have a fee for the certification.  $180**   Scholarships are available.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/126.png",
+    "strand": "Think",
+    "duration": "Full Day",
+    "prereq": "Student cost: $180, Scholarships available.",
+    "teachers": "Annie Bellerose",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 127,
+    "title": "Advanced Pickleball",
+    "tagline": "Come learn how to be a master pickleball player!",
+    "description": "This is for students who have played pickleball and wish to better their understanding of the game.  We will learn strategies, watch pro players play and gain knowledge on a lifetime sport!  We will also engage with the community and play with adults who enjoy the game.  ",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/127.png",
+    "strand": "Play",
+    "duration": "Half Day AM",
+    "prereq": "Student cost: $10, scholarships available",
+    "teachers": "Andrea Boehmcke",
+    "isPopular": true
+  },
+  {
+    "courseNumber": 128,
+    "title": "Small Acts with Great Love: Serving Local and Global Communities",
+    "tagline": "Partner with local and global charities to bring positive change to the world one small act at a time!",
+    "description": "We will be partnering with the the Missions of Charlotte Congregational Church to bring positive change to local and global communities. We will be working with several of the following charities: Charlotte Food Shelf, Green Mountain Habitat for Humanity, Joint Urban Ministry Project (JUMP), Lund, Malayaka House, New Community Project, and Heifer International.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/128.png",
+    "strand": "Serve",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Cameron  Brownell",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 129,
+    "title": "Volunteering in Sustainable Agriculture (is as simple as I can get it)",
+    "tagline": "",
+    "description": "ViStA (Volunteering in Sustainable Agriculture) gives students a chance to work on a real, organic vegetable farm. The VYCC Farm in Richmond also serves 100s of families in Chittenden County with their Health Care Shares, which are delivered weekly to families. The VYCC relies heavily on volunteer labor for preparing, planting, and harvesting crops. If you choose this opportunity, you will help them in this mission.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/129.png",
+    "strand": "Serve",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Justin Chapman",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 130,
+    "title": "All About Animals",
+    "tagline": "This one is for the animal lovers. ",
+    "description": "Want to make a difference in the lives of animals? In All About Animals, we volunteer with local animal sanctuaries and rescue centers. We also learn about careers involving animals, including working in veterinary services, training therapy dogs, and running an animal-centered business. While we are still developing the full schedule, some possible visits include: Merrymac Farm Sanctuary, Burlington Emergency Veterinary Services, Crane Mountain Valley Horse Rescue, and many more! Expect to be out of the building most days, learning about and helping our four-legged friends.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/130.png",
+    "strand": "Serve",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Lizzy Fox Lausier",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 131,
+    "title": "Hiking 101: Chill and Local Edition",
+    "tagline": "Come discover hidden local hiking spots at a chill pace while connecting with the outdoors.",
+    "description": "Students will learn how to hike responsibly by using Leave No Trace principles, discover new areas in their home towns to explore and develop confidence navigating local trails without technology. Through guided reflection and discussion, we’ll explore how nature positively impacts mental health. Participants of all experience levels are welcome but know we will be moving at a relaxed pace. ",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/131.png",
+    "strand": "Play",
+    "duration": "Half Day AM",
+    "prereq": "The student needs to be able to walk 3 miles in all weather conditions over varying terrain. ",
+    "teachers": "Marie  DiBenedetto",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 132,
+    "title": "The History of Rock & Roll",
+    "tagline": "Turn It Up—Discover How Rock and Roll Changed the World",
+    "description": "Step into the spotlight and explore how rock and roll shaped culture, challenged norms, and inspired generations of artists. In this course, you’ll listen to iconic tracks, watch videos that capture the energy of legendary performances, and experience how rock evolved from its roots to today’s hits. Along the way, you’ll dive into your own musical interests through guided research and discovery. The class culminates in a final project of your choice—whether it’s a presentation, playlist, short documentary, or creative piece that celebrates the spirit of rock. Get ready to turn up the volume on history, creativity, and your own musical voice.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/132.png",
+    "strand": "Think",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Mark Pogact",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 133,
+    "title": "Art, Feminism, & You!",
+    "tagline": "Zines, movies, poetry, art and more! Learn about feminist modes and ideas, and express your own beliefs! ",
+    "description": "Together, we'll learn about sick art and create our own! We will talk music, poetry, zines, and paintings - how has feminism informed these art forms? What is feminism? What do you believe? All are welcome :)\n\n*Know that we will be taking a field trip to Boston to check out amazing art! ",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/133.png",
+    "strand": "Create",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Fiona Zahm & N/A",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 134,
+    "title": "Teen Movies: Coming of Age Movies from the 1980’s to Today",
+    "tagline": "We’re watching the greatest coming-of-age films to figure out why being a teen feels exactly the same—and totally different—in every generation, and what it means for your own identity.",
+    "description": "What is a coming-of-age movie? It's a movie that explores a character’s intense, transformative shift from youth to maturity. We’ll deconstruct these stories - from the angst of the John Hughes era to complex modern portrayals - to investigate why they feel both timeless and totally different across the decades. If you want to understand how filmmakers use techniques like metaphor, mise-en-scène, and narrative structure to shape how we see ourselves, this is your class.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/134.png",
+    "strand": "Think",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Brad Miller",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 135,
+    "title": "Mâché Magic: From Paper to Sculpture",
+    "tagline": "\"Get messy, get creative, and bring wild ideas to life in 3D!\"",
+    "description": "Get ready to roll up your sleeves and dive into the creative chaos of paper-mâché! In this 10-day exploratory class, students will tear, mix, mold, and sculpt their way through the wonderfully messy process of turning paper and paste into amazing 3D creations. Expect sticky fingers, flying newspaper strips, and plenty of laughs as you experiment with form, color, and texture. Whether you’re building masks, animals, or wild abstract sculptures, this class is all about embracing the mess and watching your imagination take shape—literally!",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/135.png",
+    "strand": "Create",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Greg Conk",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 136,
+    "title": "Exploring Vermont's Nature",
+    "tagline": "From forests to fields, uncover the stories Vermont's nature is telling",
+    "description": "Get outside and explore what Vermont’s nature has to offer! This course involves daily walks at different local trails throughout Chittenden county. We will spend our time learning with members of the community how to identify local trees, plants and signs of local wildlife. Students will be keeping a nature journal and recording daily entries of their observations and what they have learned about the ways in which geology, watersheds, plants and animals are connected within a place. This session will end with an opportunity to use what we have learned to help out our ecosystem and community. \n",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/136.png",
+    "strand": "Think",
+    "duration": "Full Day",
+    "prereq": "None ",
+    "teachers": "Rae Bronenkant & Sam Parker",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 137,
+    "title": "Denim Deconstruction",
+    "tagline": "Let’s reincarnate our second hand clothes.",
+    "description": "This two week workshop  will dismantle old clothes and transform them into functional accessories or clothing items that we want to use/ wear. We will examine bags, clothing alterations and transformations using our old clothes as inspiration.  Instruction on sewing and using the machines will vary depending on level of experience.  Participants will walk away from this experience with at least one of their very own creations and a better understanding of the sewing machine. ",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/137.png",
+    "strand": "Create",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Meredith Visco",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 138,
+    "title": "Art History: Paint and Sip",
+    "tagline": "From Viewer to Creator: Paint, Splatter, and Sculpt Your Way Through Art History",
+    "description": "In this course we will look at some of the most important paintings and artistic movements in Western culture.  We will spend time in class viewing and discussing works of art, and what they reveal about the culture and time from which they come.  You can expect to come out of it with a heightened knowledge and appreciation of art that you can put to use when we enrich our learning through a field trip to several museums - last year we went to Boston!\n\nIn addition to daily learning as we walk you through eight important eras of art history, students will spend half of class creating their own work of art modeled on each movement. Paint your own Starry Night, make Medieval stained glass, and splatter paint your own Jackson Pollock, among other activities.\n",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/138.png",
+    "strand": "Think",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Katie Mack & Molly Tonino",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 139,
+    "title": "Roller Skating & Derby",
+    "tagline": "Play hard, skate strong.",
+    "description": "During this Rise you will develop skating skills while learning about the sport of roller derby and also freestyle and dance skating in a supportive community! If you haven't skated on quad (4-wheel) skates before, we will teach you. If you have, you will refine your skills with fun drills. We will skate every day! The expectation for participants: actively participate by being on skates every day and be willing to try something new. On Presentation Day the group will demonstrate skating skills in a derby scrimmage. Gear will be provided if you need it.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/139.png",
+    "strand": "Play",
+    "duration": "Half Day PM",
+    "prereq": "No prior skating experience needed, but you must be able to stand up on skates and be willing to learn how to fall (we will teach you how to fall safely!).",
+    "teachers": "Amanda Terwillegar",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 140,
+    "title": "Adventures in French",
+    "tagline": "Emily’s in Paris! and we are in Vermont taking French out of the classroom and into real life as we go to spaces and places we already know and as we parler that français…as we go!",
+    "description": "In this RISE session we will use our French vocabulary and helpful expressions for our adventure of the day. These may include a hike, a picnic, a visit to a local farm, mini golf or field games, cooking, watching a movie, or doing a craft or painting—all while chatting with friends in French. Allons-y! and Say oui!\nOpen to all students who have taken French 2 and up.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/140.png",
+    "strand": "Think",
+    "duration": "Half Day AM",
+    "prereq": "Students Should Have Taken French 2  \nStudent cost: $60, scholarships are available",
+    "teachers": "Genevieve Smith",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 141,
+    "title": "Asian Games and Entertainment",
+    "tagline": "Explore the games and entertainment of Asia, Mahjong, Kdramas, and Kpop to just name a few.",
+    "description": "In this course you will learn how to play Mahjong, Go, and Go Stop, along with a few others.  You will also be exposed to Asian Entertainment, Food, Movies, Music, and TV.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/141.png",
+    "strand": "Play",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Diantha Francis",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 142,
+    "title": "Scuba Certification Course",
+    "tagline": "Learn how to be Aquaman for real! A certification for a lifetime.",
+    "description": "Students will complete Open Water Scuba Ceritfication course that will include E-Learning as well as check out dives through the Burlington Waterfront Diving Center.  Students that pass the check out dives will gain a PADI Open Water SCUBA Certification that will last your entire life and allow you to SCUBA dive world-wide!  **This course will have a fee for the certification.  Between $500 - $600**   Scholarships are available.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/142.png",
+    "strand": "Play",
+    "duration": "Half Day AM",
+    "prereq": "Student needs to know how to swim!\nStudent cost: $753.50 for certification",
+    "teachers": "Olaf Verdonk",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 143,
+    "title": "Unified Summer Camp",
+    "tagline": "Get ready for two weeks of summer fun, friendship, and creativity!",
+    "description": "Our inclusive camp brings together students with and without disabilities to learn, play, and grow side by side. Students team up for group games, talent shows, and creative performances, while also helping with daily activities like meal time and cabin life. With exciting days and cozy overnight stays, campers build confidence, teamwork, and lifelong memories. It’s more than just a camp—it’s a community where everyone belongs, contributes, and shines!",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/143.png",
+    "strand": "Play",
+    "duration": "Full Day",
+    "prereq": "Students should have open minds, willingness to connect",
+    "teachers": "Janelle Moynihan & Daniel Lyons, Claire Thibeault, Karen Rodgers, Katie Jankowski, Emily Doyle",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 144,
+    "title": "Golf For Intermediates",
+    "tagline": "",
+    "description": "Are you ready to elevate your golf game to the next level? Our Golf course is designed for golfers who have a basic understanding of the game and are eager to refine their skills, improve their consistency, and lower their scores. You should be comfortable swinging the club and prepared to walk for a couple of hours each day. \n",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/144.png",
+    "strand": "Play",
+    "duration": "Half Day AM",
+    "prereq": "Student should be able to swing a golf club and hit a ball!  **Fee between $100 and $300 for golf course (higher fee is for season membership)",
+    "teachers": "JP Benoit & Steve Reinemann",
+    "isPopular": true
+  },
+  {
+    "courseNumber": 145,
+    "title": "Magic: The Gathering",
+    "tagline": "Join us as we play as much Magic as possible!",
+    "description": "What is Magic: The Gathering? It is a collectible trading card game where players build a deck and - through “magic” - cast spells, summon creatures and try to defeat their opponents. The game is fun, complex, gives tremendous opportunity for creativity and self-expression, and deeply rewards those who invest in the experience.\n\nPlayers of any level are welcome! New to the game? We would love to teach you how to play! An experienced player? We will challenge you to improve your skills and hopefully introduce you to a few new ways to play.\n\nWe will be playing as much Magic as possible each day, which of course requires Magic cards. Know that we will be opening packs, drafting cards and building decks almost every day. All of the cards you play with will be yours to take home at the end of the course. With that, the course comes with a cost: $35 per player. This should give us enough to purchase cards and provide a robust and exciting play experience for the whole group.\n\nFurther, if you wish to make an additional donation of cards (perhaps you have unused cards at home), we will happily find a way to incorporate them into the course and enhance the experience for everyone (either this year or in future years).\n",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/145.png",
+    "strand": "Play",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Ben Epstein",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 146,
+    "title": "Architecture 101",
+    "tagline": "Architecture is frozen music — come learn the rhythm.",
+    "description": "In architecture, the harmony between form and function is the cornerstone of design, where aesthetic elegance seamlessly merges with practical utility, shaping spaces that not only please the eye but also enhance the way we live and interact with our environment. In this course, we’ll cover the basics of drafting, learn about great architects and the iconic masterpieces they created, gain a basic understanding of structural engineering concepts, gain an understanding of the different architectural styles, discover some of the epic failures of structures, go on an architecture appreciation field trip, do some hands-on model design/build work, and hear from experienced architects about what a career in architecture is like.\n\nThe goal of this course is for you to gain an understanding of architecture, foster an appreciation for both architectural marvels and mediocrity, and empower you to create your own design through a hands-on small project.\n",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/146.png",
+    "strand": "Create",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Geoff Glaspie",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 147,
+    "title": "Game Programming",
+    "tagline": "Create your own computer game",
+    "description": "In this session, you'll learn how to write code to create games of different types. If you're interested in the creativity and logic behind creating games, this session is for you. We'll learn through tutorials, experimentation, and examples from professional game developers. Experience is not required-- you'll use software appropriate to your prior knowledge.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/147.png",
+    "strand": "Create",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Charlie MacFadyen",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 148,
+    "title": "A New Birth of Freedom: the Meaning of the American Civil War",
+    "tagline": "A low-key academic vibe for those interested in gaining aura through an intellectual flex!",
+    "description": "What caused the American Civil War? What was it like to live through it? How did soldiers and civilians--including here in Vermont--understand the meaning of the war? Who are we as Americans? How did race, gender, and class shape the experiences of those who experienced the war firsthand? What is the legacy of the war? How should it be remembered? \n\nThese are some of the questions that students will explore in this session through their own original research, in visits to historic locations, and in discussions with one another.\n\nTo learn more about the intimate details of the greatest conflict in American history, students will also immerse themselves in the story of a young man and woman from northern Vermont whose lives would never be the same. They are the subject of my book \"If I Can Get Home This Fall: A Story of Love, Loss, and a Cause in the Civil War.\" I may even have copies to give to participants! \n",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/148.png",
+    "strand": "Think",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Tyler Alexander",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 149,
+    "title": "Guilty or Innocent? Creative Mock Trials",
+    "tagline": "Calling all lawyers, defendants, star witnesses, paralegals, and bailiffs!",
+    "description": "Ready to create some courtroom drama? If you like analyzing arguments, defending your position, and taking on a role in a creative setting, Creative Mock Trials is for you! In this course we will explore the workings of a trial courtroom and then stage two mock trials: a murder trial based on a short work of fiction, and a fictional trial based on a real-life case about a minor’s rights over their medical care. We will also watch and analyze a movie version of a courtroom drama. ",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/149.png",
+    "strand": "Think",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Wendy Eberhart",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 150,
+    "title": "Miyazaki's Masterworks",
+    "tagline": "Miyazaki's Masterworks is an in-depth exploration of the major films by director Hayao Miyazaki (of Studio Ghibli).",
+    "description": "Miyazaki's Masterworks is an in-depth critical exploration of Hayao Miyazaki’s animation oeuvre. Students will review the chronological development of Miyazaki’s animation techniques and thematic interests from Nausicaa of the Valley of the Wind (1984) through The Boy and the Heron (2023).  Classes will require conversational analysis of Miyazaki’s major films. Students will make a Ghibli-style storyboard for presentation day",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/150.png",
+    "strand": "Think",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Nick Canaday",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 151,
+    "title": "Exploring the Mountains of the Northeast",
+    "tagline": "“I took a walk in the woods and came out taller than trees.”  Spend RISE hiking and exploring, serving others, and building community and skills.",
+    "description": "Do you enjoy being on trails and seeing spectacular mountain vistas?  Camping under the stars?  Making new friends and building community?  Giving back to the outdoors?  During this full-day RISE experience, we will be embarking on several day-hikes and an overnight camping experience.  \n\nThis experience will provide the opportunity to develop and hone basic outdoor skills including equipment use and maintenance, Leave No Trace principles, leadership and stewardship roles, and community building. Come explore and find a new adventure!\n",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/151.png",
+    "strand": "Think",
+    "duration": "Full Day",
+    "prereq": "Students should be able to hike rigorous trails for several hours at a time.",
+    "teachers": "Andrew Scott & Jason Fearon",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 152,
+    "title": "ScreenPrinting T-Shirts",
+    "tagline": "What's on your shirt? ",
+    "description": "Students learn the basics of ScreenPrinting--making a screen, designing images, creating stencils, blocking out images and \"burning\" images--to print their own T-Shirt designs.  Students may bring materials (T-Shirts or other fabric) to print on (not required).",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/152.png",
+    "strand": "Create",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Cyndy Craft",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 153,
+    "title": "Intro to Pickleball",
+    "tagline": "Pick up the skills for Pickleball",
+    "description": "Pickleball is becoming one of the most popular sports in the U.S. This class is for those who have played a little bit and want to learn more, or have never played and have wanted to learn. Pickleball for beginners is a comprehensive class that covers all of the elements of pickleball. You will learn the history, how to keep score, game etiquette and all of the skills required to play a game of Pickleball. Each class will typically start with skill practice and end with game play. Students will participate in a tournament to wrap up the class. Be prepared to play and move.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/153.png",
+    "strand": "Play",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Patrick Candon",
+    "isPopular": true
+  },
+  {
+    "courseNumber": 154,
+    "title": "Dungeons & Dragons",
+    "tagline": "Learn to dungeon and learn to dragon in the most popular tabletop role-playing game of all time!",
+    "description": "Experience the magic of Dungeons & Dragons! You will learn how to play, meet other adventurers, and embark on an epic campaign!",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/154.png",
+    "strand": "Play",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Joey O'Brien",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 155,
+    "title": "WildHER: Vermont Outdoor Skills",
+    "tagline": "Where students build skills, confidence, and grit.",
+    "description": "This course empowers students to thrive in Vermont’s outdoors through adventure, learning, and fun. From earning your Hunter Safety Certification to mastering skills like GPS navigation, fishing, archery, outdoor cooking, conservation, field knowledge, and fire building, you’ll gain the confidence and competence to take on real-life challenges in and beyond the outdoors.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/155.png",
+    "strand": "Think",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Sarah Malcolm & Laurel Billingsley",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 156,
+    "title": "Justice & Joy",
+    "tagline": "Discover Vermont beyond the textbook through hands-on exploration of Black history, Indigenous sovereignty, LGBTQ+ movements, social justice, and the arts.",
+    "description": "Have you ever wanted to learn more about Vermont’s Black history and thriving Black diaspora communities? Indigenous dispossession and modern resilience? Gender and sexuality struggle and liberation? Arts? Social Justice? Then this is the session for you! \n\nThis full-day experience will take field trips almost every day. We’ll visit sites along the Vermont African American Heritage Trail, the displaced Abenaki First Nation of Odanak in what is now Quebec, the historic Clemmons Family Farm, Outright Vermont, as well as museums, art exhibits, cultural landmarks, and more.\n",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/156.png",
+    "strand": "Think",
+    "duration": "Full Day",
+    "prereq": "None",
+    "teachers": "Peter Langella",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 157,
+    "title": "Wood Bowl Turning",
+    "tagline": "Create your first bowl from a tree!",
+    "description": "Students will learn the fundamentals of wood bowl turning in a hands-on environment and create their own bowl from a log.  No prior experience needed: this class is designed for students who have never made a bowl before, as well as those who have experience and want to take their skills to the next level.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/157.png",
+    "strand": "Create",
+    "duration": "Half Day AM",
+    "prereq": "Students need to wear closed-toe shoes",
+    "teachers": "Eddie  Krasnow",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 158,
+    "title": "Broadway: the American Musical",
+    "tagline": "Who loves a musical?",
+    "description": "In this RISE course students will have the opportunity to discover both stage and cinematic versions of musical theater. In addition participants can test their knowledge of Musicals through daily trivia challenges.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/158.png",
+    "strand": "Think",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Stacy Wulff",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 159,
+    "title": "Can You Get Away with Murder?",
+    "tagline": "Uncover secrets, question suspects, and cause murder mayhem!",
+    "description": "In this course, students will design, perform, and solve murder mysteries and escape rooms. We’ll build characters, motives, and storylines, then bring them to life through interactive games and group challenges. This course is a great fit for students who enjoy theater, storytelling, creative collaboration, and of course, MURDER!",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/159.png",
+    "strand": "Create",
+    "duration": "Half Day AM",
+    "prereq": "This course should be accessible to all. Students should feel comfortable with teamwork, speaking in front of a small group, and leaning into theatrical games.",
+    "teachers": "Jessica O'Brien",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 160,
+    "title": "Dragonboat",
+    "tagline": "Interested in paddling for a cause?",
+    "description": "The goal of this course is to introduce high school students to the fastest growing water sport in the world, Dragon Boating. Students will learn about the Dragonheart Vermont (DHVT) organization and how it has grown from a single breast cancer survivor team into the 200+ members and 8 competitive teams that comprise the organization today. Students will also learn about the sport itself, understand the technical elements of the sport. We will go over basic body mechanics and teach students how to prepare their bodies and minds for this sport. This will help students translate this to any sport they currently play and in many other aspects of life as they mature. This course requires students to be on water.  Dragonheart Vermont Mission: Dragonheart VT strives to strengthen and empower breast cancer survivors and supporters through the challenging sport of dragon boating, instilling in its members the values of teamwork, fitness and community giving.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/160.png",
+    "strand": "Play",
+    "duration": "Half Day PM",
+    "prereq": "Students must be comfortable with open water (while wearing a life jacket) and being outside every day.\nStudent cost: $20, scholarships available",
+    "teachers": "Lianna Reed & Deb Newell-Robinson",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 161,
+    "title": "Boater Safety",
+    "tagline": "Get your Vermont Boater's License and get out on the water for some practice.",
+    "description": "This course will primarily be in the classroom, completing online modules that are required to receive your Vermont Boater's License. There will be an opportunity to have hands-on experience operating a sailboat through the Community Sailing Center in Burlington. Just in time for summer!",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/161.png",
+    "strand": "Play",
+    "duration": "Half Day AM",
+    "prereq": "Students need to know how to swim.",
+    "teachers": "Sam Callison",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 162,
+    "title": "Create and Unwind",
+    "tagline": "Explore calming creative art activities- no experience required!",
+    "description": "Explore activities, including art, designed to calm and center us. Activities include, but are not limited to, zentangle, diamond art, narture art, watercolors and paint by numbers, collage, and clay. No experience necessary! ",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/162.png",
+    "strand": "Create",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Hannah Worden & Cari Caussey",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 163,
+    "title": "CVU Redhawk Radio",
+    "tagline": "Be a on-air personality, writer, DJ or tech manager for CVU's online radio station!",
+    "description": "If you are interested in being a part of CVU's first and only online radio station, join this RISE! Learn how to produce content, mix songs, and manage a radio station. The station is still growing and we want your input!",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/163.png",
+    "strand": "Create",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Gary Lambert",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 164,
+    "title": "The Deep Dive: An Advanced Board Game Workshop",
+    "tagline": "Delve into the thinking required to dominate when playing games that require thought and strategy.",
+    "description": "Dive into a world of strategic classics like Monopoly and Risk. Face challenges as you play Ticket to Ride, Battleship, Azul, Pandemic and Clue. Revisit the timeless elegance of chess or the wordplay mastery of Scrabble. With a plethora of games, this immersive experience promises to be not just entertaining but a chance to connect, strategize, and build lasting memories with fellow gamers. Get ready to roll the dice, draw your cards, and make every move count! \n",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/164.png",
+    "strand": "Think",
+    "duration": "Half Day PM",
+    "prereq": "Students should be willing to play more complicated and longer games.",
+    "teachers": "Jackie Louthis",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 165,
+    "title": "The Great CVU Baking Show",
+    "tagline": "On your marks...get set...bake!",
+    "description": "Welcome to the tent! Step into the world of classic British baking as we take on fun and flavorful recipes inspired by The Great British Baking Show. We’ll explore cakes, chocolates, biscuits, breads, and pastries through our own versions of signature bakes and technical challenges, culminating in a showstopper to show off all that you’ve learned.\n\nOn your marks... get set... bake!",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/165.png",
+    "strand": "Create",
+    "duration": "Half Day AM",
+    "prereq": "Students need to be able to follow a recipe.",
+    "teachers": "Katie Willard",
+    "isPopular": true
+  },
+  {
+    "courseNumber": 166,
+    "title": "Be Kind, Rewind: Writing the Definitive Review of 80s & 90s Blockbusters",
+    "tagline": "You become the movie critic for some top 80s and 90s films and learn how to write a movie review.",
+    "description": "We will watch some of the best old-school movies and you decide if they're still great. You will learn how to write a movie review and put this skill into action for 9 classic 80s and 90s films.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/166.png",
+    "strand": "Think",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Scott Bliss",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 167,
+    "title": "For the Love of Reading",
+    "tagline": "Come explore a world of books and libraries!",
+    "description": "Do you love to read? Want to get a jump on your summer book list? This course will explore your love of reading through group discussion, personal reflection, silent reading and the creation of your own reading area. Books can transport us anywhere so explore how to transform any place into your own personal book nook. As we read independently, we will explore different reading environments both on and off CVU’s campus, including college libraries, experiment with different food choices to sustain our reading power, and how to share our experiences with others. Come read with us!",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/167.png",
+    "strand": "Think",
+    "duration": "Half Day PM",
+    "prereq": "Students should enjoy or be open to independent reading",
+    "teachers": "Tomi Pogact & Katie Kuntz",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 168,
+    "title": "Creating and Sharing Kindness Art",
+    "tagline": "Kindness rocks!",
+    "description": "We will spend time walking in nature collecting the perfect rocks and other natural objects. Back on campus we will research positive, inspirational quotes and use bright, cheerful paint colors to paint quotes on our materials. Our later sessions will be spent walking local parks, paths, and playgrounds distributing our art in fun locations for all to see and be uplifted.\nAll levels of artistic and crafting skills are welcome. Bring a positive attitude and willingness to spread kindness in our communities. Participants must be willing to walk in the woods and on paths each day.\n",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/168.png",
+    "strand": "Create",
+    "duration": "Half Day PM",
+    "prereq": "None",
+    "teachers": "Sarah Strack",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 169,
+    "title": "Stained Glass for Beginners",
+    "tagline": "Learn how to create beautiful illuminated light!",
+    "description": "Explore and practice the process of making a creative form of historical art. Learn how to cut, shape, and solder glass to make your own illuminated object of art.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/169.png",
+    "strand": "Create",
+    "duration": "Half Day PM",
+    "prereq": "Students need to be able to work with sharp glass, use a hot soldering iron, and are able to work with a grinding machine to smooth glass shards.",
+    "teachers": "Tina Roberts & Charlotte Sylvester",
+    "isPopular": true
+  },
+  {
+    "courseNumber": 170,
+    "title": "Exploring Vermont’s Outdoor Business Economy",
+    "tagline": "",
+    "description": "In this session we’ll explore the fastest growing industry in Vermont: outdoor business. From start-ups to internationally recognized brands, we’ll explore the companies that are shaping the outdoor industry from right here in the Green Mountains. Our case studies will span outdoor recreation, retail, sustainability and more.\n\nHow do outdoor enthusiasts become entrepreneurs ? How do you turn a great idea into a profitable outdoor-oriented business?\n\nIf you’re interested in a career in the outdoor industry, this RISE session is for you! We will visit several different businesses and meet with industry leaders. Students will be expected to ask questions of each stakeholder and reflect on their new learning. We will provide transportation to each location. ",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/170.png",
+    "strand": "Think",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Rachel  Cohen",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 171,
+    "title": "Hunt, fish, habitat: advance conservation!",
+    "tagline": "It's not ours, it's just our turn.",
+    "description": "Do you like hunting, fishing or foraging? Well then it's time to give back to the land that provides so much for you! Spend RISE working outside on habitat work connected to conservation groups like Backcountry Hunters and Anglers, Ruffed Grouse Society and the Audubon Society. This could include planting trees, releasing apple trees and clearing invasive species.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/171.png",
+    "strand": "Serve",
+    "duration": "Full Day",
+    "prereq": "Students will be outside most of the time",
+    "teachers": "Dave  Trevithick",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 175,
+    "title": "Bookmaking",
+    "tagline": "The Art of the Handmade Journal",
+    "description": "Bookmaking is the art of creating handmade bound journals and books, which can be used for journaling and sketching, or designed for some other purpose. Students will learn several different bindings, many of which have been used for centuries, culminating in trying the Coptic Binding. During this half day session, students will learn how to make paper, fold signatures, cover and design bookboard, and will build several books. There may be some off-campus travel. This workshop is designed for students who have an interest in art and journaling.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/175.png",
+    "strand": "Create",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Emily  Mitchell",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 177,
+    "title": "Building a Fort in the Woods",
+    "tagline": "Where Trigonometry Meets Tree Branches",
+    "description": "Join us for a hands-on, all-hands-on-deck RISE where we’ll continue building our fort from last year—rain or shine! Students will help design and construct improvements like better drainage, vertical walls, a door, a living roof, possibly even a working fireplace, with ideas requiring drafting and approval before execution. You’ll work hard, collaborate, and gain real-world problem-solving experience through daily physical effort. Come ready to build, reflect, and make something lasting together.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/177.png",
+    "strand": "Create",
+    "duration": "Half Day PM",
+    "prereq": "Students need to be able to get up the hill beyond the school and engage in physical work.",
+    "teachers": "Arthur Chiaravalli",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 178,
+    "title": "Aventuras en español",
+    "tagline": "",
+    "description": "¿Quieres usar el español y pasarlo bien al mismo tiempo? En Aventuras en español pondrás tu español en acción a través de actividades divertidas y diferentes, como visitar una granja, jugar mini golf, cocinar, ver una película, participar en juegos dentro y fuera del aula, salir a caminar por la naturaleza y crear manualidades. Cada día aprenderás vocabulario y expresiones útiles para comunicarte solo en español, mientras compartes experiencias reales con tus compañeros. ¡Una forma diferente y divertida de seguir creciendo en español!",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/178.png",
+    "strand": "Think",
+    "duration": "Half Day AM",
+    "prereq": "Students will need to be in Spanish 3, 4 or 5 or be native speakers to be in this class.",
+    "teachers": "Carolina  Rodriguez",
+    "isPopular": false
+  },
+  {
+    "courseNumber": 179,
+    "title": "Adulting Your Way to Financial Independence",
+    "tagline": "How to make decisions that can lead to a rich and meaningful life.",
+    "description": "In this session we aim to educate students about financial literacy. We explore how to grow wealth in simple and rewarding ways.  Through a series of activities and guest speakers we look at the impact of financial decision making and how living intentionally can provide freedom both now and in the future.  We learn discuss budgeting, investing, credit scores, credit cards, interest rates and more.",
+    "photo": "https://storage.googleapis.com/cvu-rise-course-photos/photos/RISE%20photos/179.png",
+    "strand": "Think",
+    "duration": "Half Day AM",
+    "prereq": "None",
+    "teachers": "Luke Wight",
+    "isPopular": false
+  }
+];
+
+        let filterStrand = 'All';
+        let filterTime = 'All';
+        let currentSort = 'random';
+        let searchQuery = '';
+
+        const grid = document.getElementById('course-grid');
+        const sortSelect = document.getElementById('sort-select');
+        const searchInput = document.getElementById('search-input');
+        const overlay = document.getElementById('modal-overlay');
+
+        function renderGrid() {
+            grid.innerHTML = '';
+            
+            let displayList = courses.filter(c => {
+                const strandMatch = filterStrand === 'All' || c.strand === filterStrand;
+                
+                // UPDATED TIME FILTER LOGIC
+                // If filter is 'All', show everything.
+                // Otherwise, perform an exact match on the duration string from the data.
+                // Assuming data uses "Half Day AM", "Half Day PM", "Full Day"
+                const timeMatch = filterTime === 'All' || c.duration === filterTime;
+                
+                const searchTarget = `${c.title} ${c.tagline} ${c.teachers}`.toLowerCase();
+                const searchMatch = searchQuery === '' || searchTarget.includes(searchQuery.toLowerCase());
+                return strandMatch && timeMatch && searchMatch;
+            });
+
+            if (currentSort === 'number') {
+                displayList.sort((a, b) => String(a.courseNumber).localeCompare(String(b.courseNumber), undefined, {numeric: true}));
+            } else if (currentSort === 'name') {
+                displayList.sort((a, b) => a.title.localeCompare(b.title));
+            } else if (currentSort === 'random') {
+                // Note: In a real app, you might want to shuffle only once or seed the shuffle 
+                // so it doesn't change on every keystroke, but for this demo random sort is re-run on render.
+                // If the user selects "Random" explicitly, we re-shuffle.
+                // If the user types in search, we might want to preserve order, but simple shuffle is ok here.
+                 if (currentSort === 'random' && searchQuery === '') {
+                     // Only truly random shuffle if we are not actively filtering/searching to keep UI stable? 
+                     // Or just shuffle every time. Let's keep it simple.
+                     displayList.sort(() => Math.random() - 0.5);
+                 }
+            }
+
+            displayList.forEach(course => {
+                const card = document.createElement('div');
+                card.className = 'course-card group bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm hover:shadow-xl cursor-pointer flex flex-col';
+                
+                // Logic for the label on the card image
+                let timeLabel = '';
+                if (course.duration === 'Half Day AM') timeLabel = 'AM';
+                else if (course.duration === 'Half Day PM') timeLabel = 'PM';
+                else timeLabel = 'Full Day';
+
+                card.innerHTML = `
+                    <div class="relative h-56 overflow-hidden bg-slate-200">
+                        <img src="${course.photo}" alt="" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                        <div class="absolute top-3 left-3 bg-white/95 backdrop-blur shadow-sm text-slate-900 text-xs font-black px-3 py-1.5 rounded-lg uppercase border border-slate-100">${timeLabel}</div>
+                        ${course.isPopular ? `<div class="absolute top-3 right-3 bg-orange-600 text-white px-3 py-1 rounded-lg shadow-lg text-[10px] font-black uppercase tracking-widest border border-orange-400">Popular</div>` : ''}
+                    </div>
+                    <div class="p-6 flex-grow">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-indigo-600">${course.strand}</span>
+                        <h3 class="text-xl font-extrabold text-slate-900 leading-tight mt-1 line-clamp-2">${course.title}</h3>
+                        
+                    </div>
+                `;
+                card.onclick = () => openModal(course);
+                grid.appendChild(card);
+            });
+        }
+
+        searchInput.addEventListener('input', (e) => { searchQuery = e.target.value; renderGrid(); });
+        sortSelect.addEventListener('change', (e) => { currentSort = e.target.value; renderGrid(); });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.onclick = (e) => {
+                const type = e.target.dataset.type;
+                const val = e.target.dataset.val;
+                
+                if (type === 'strand') {
+                    // Toggle logic for Strand
+                    if (filterStrand === val && val !== 'All') {
+                         filterStrand = 'All'; // Toggle off
+                    } else {
+                         filterStrand = val;
+                    }
+                }
+                
+                if (type === 'duration') {
+                    // Toggle logic for Duration
+                    if (filterTime === val) {
+                        filterTime = 'All'; // Toggle off if clicking the same active filter
+                    } else {
+                        filterTime = val;
+                    }
+                }
+
+                // Update UI classes
+                // 1. Reset all buttons of this type
+                e.target.parentElement.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active-filter'));
+                
+                // 2. Set 'All' active if filter is 'All', otherwise set specific button active
+                if (type === 'strand') {
+                     if (filterStrand === 'All') {
+                         document.querySelector('button[data-type="strand"][data-val="All"]').classList.add('active-filter');
+                     } else {
+                         document.querySelector(`button[data-type="strand"][data-val="${filterStrand}"]`).classList.add('active-filter');
+                     }
+                }
+                
+                if (type === 'duration') {
+                    if (filterTime !== 'All') {
+                        document.querySelector(`button[data-type="duration"][data-val="${filterTime}"]`).classList.add('active-filter');
+                    }
+                    // We don't have an "All" button visible for Time, so no else needed for highlighting "All"
+                }
+                
+                renderGrid();
+            };
+        });
+
+        document.getElementById('reset-btn').onclick = () => {
+            filterStrand = 'All'; filterTime = 'All'; currentSort = 'random'; searchQuery = '';
+            sortSelect.value = 'random'; searchInput.value = '';
+            
+            // Clear all active states
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active-filter'));
+            // Set Strand All to active
+            document.querySelector('button[data-type="strand"][data-val="All"]').classList.add('active-filter');
+            
+            renderGrid();
+        };
+
+        function openModal(c) {
+            document.getElementById('m-title').innerText = c.title;
+            document.getElementById('m-description').innerText = c.description;
+            document.getElementById('m-strand').innerText = c.strand;
+            document.getElementById('m-duration').innerText = c.duration;
+            document.getElementById('m-teachers').innerText = c.teachers ? `Instructors: ${c.teachers}` : '';
+            document.getElementById('m-photo').src = c.photo;
+            const pBox = document.getElementById('m-prereq-box');
+            if (c.prereq && c.prereq.trim() !== "") {
+                pBox.classList.remove('hidden');
+                document.getElementById('m-prereq').innerText = c.prereq;
+            } else { pBox.classList.add('hidden'); }
+            overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        document.getElementById('close-btn').onclick = () => { overlay.classList.add('hidden'); document.body.style.overflow = ''; };
+        overlay.onclick = (e) => { if(e.target === overlay) { overlay.classList.add('hidden'); document.body.style.overflow = ''; }};
+        
+        // Initial Render
+        renderGrid();
+    </script>
+</body>
+</html>
